@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { foodItems } = require('./data');
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -31,6 +32,15 @@ async function run() {
         const database = client.db('Savor')
         const foodsCollection = database.collection('foods')
 
+        app.get('/insertAllFoods', async (req, res)=>{
+            const result = await foodsCollection.insertMany(foodItems)
+            res.send(result)
+        })
+
+        app.get('/foods', async (req, res) => {
+            const result = await foodsCollection.find().toArray()
+            res.send(result)
+        })
 
 
         // await client.db('admin').command({ ping: 1 })
