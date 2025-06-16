@@ -32,19 +32,23 @@ async function run() {
         const database = client.db('Savor')
         const foodsCollection = database.collection('foods')
 
-        app.get('/insertAllFoods', async (req, res)=>{
+        app.get('/insertAllFoods', async (req, res) => {
             const result = await foodsCollection.insertMany(foodItems)
             res.send(result)
         })
 
         app.get('/foods', async (req, res) => {
-            const result = await foodsCollection.find().toArray()
+            const searchText = req?.query?.title || ''
+            const query = {
+                name: { $regex: searchText, $options: 'i' }
+            }
+            const result = await foodsCollection.find(query).toArray()
             res.send(result)
         })
 
-        app.get('/top-foods', async (req, res)=>{
-            const options = { 
-                sort: {"purchaseCount": -1}
+        app.get('/top-foods', async (req, res) => {
+            const options = {
+                sort: { "purchaseCount": -1 }
             }
             const result = await foodsCollection.find({}, options).limit(6).toArray()
             res.send(result)
