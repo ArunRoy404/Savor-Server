@@ -42,6 +42,14 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/top-foods', async (req, res)=>{
+            const options = { 
+                sort: {"purchaseCount": -1}
+            }
+            const result = await foodsCollection.find({}, options).limit(6).toArray()
+            res.send(result)
+        })
+
 
         // await client.db('admin').command({ ping: 1 })
         // console.log("Pinged your deployment. You successfully connected to MongoDB!");
