@@ -79,6 +79,13 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/my-orders', async (req, res) => {
+            const email = req?.query?.email
+            const query = { buyerEmail: email }
+            const result = await purchasedCollection.find(query).toArray()
+            res.send(result)
+        })
+
         app.post('/foods', async (req, res) => {
             const foodData = req.body
             const result = await foodsCollection.insertOne(foodData)
@@ -90,7 +97,6 @@ async function run() {
             const result = await purchasedCollection.insertOne(foodData)
             res.send(result)
         })
-
 
         app.get('/top-foods', async (req, res) => {
             const options = {
@@ -110,6 +116,13 @@ async function run() {
             const id = req?.query?.id
             const query = { _id: new ObjectId(id) }
             const result = await foodsCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.delete('/my-orders', async (req, res) => {
+            const id = req?.query?.id
+            const query = { _id: new ObjectId(id) }
+            const result = await purchasedCollection.deleteOne(query)
             res.send(result)
         })
 
