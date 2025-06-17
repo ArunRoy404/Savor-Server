@@ -10,6 +10,12 @@ const port = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
+var admin = require("firebase-admin");
+var serviceAccount = require("./firebase-admin-key.json.json");
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
 const DB_USER = process.env.DB_USER
 const DB_PASS = process.env.DB_PASS
 
@@ -31,6 +37,28 @@ async function run() {
 
         const database = client.db('Savor')
         const foodsCollection = database.collection('foods')
+
+
+        const verifyFirebase = async (req, res, next) => {
+            const authorization = req?.headers?.authorization
+            console.log(authorization);
+
+            const firebaseToken = authorization.split(" ")[1]
+            console.log(firebaseToken);
+            if (!firebaseToken) {
+                res.status(401).send({ message: "Unauthorized Access" })
+            }
+
+            try {
+                const tokenUser = await admin.auth().verifyIdToken(firebaseToken)
+                req.tokenUser = tokenUser
+                console.log(tokenUser);
+                next()
+            } catch (error) {
+                res.status(401).send({ message: "Invalid Token", error })
+            }
+        }
+
 
         app.get('/insertAllFoods', async (req, res) => {
             const result = await foodsCollection.insertMany(foodItems)
@@ -54,7 +82,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/foods/my-foods', async (req, res) => {
+        app.get('/foods/my-foods', verifyFirebase, async (req, res) => {
             const query = req?.query
             const result = await foodsCollection.find(query).toArray()
             res.send(result)
