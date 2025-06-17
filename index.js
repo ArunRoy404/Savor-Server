@@ -37,14 +37,13 @@ async function run() {
 
         const database = client.db('Savor')
         const foodsCollection = database.collection('foods')
+        const purchasedCollection = database.collection('purchased')
 
 
         const verifyFirebase = async (req, res, next) => {
             const authorization = req?.headers?.authorization
-            console.log(authorization);
 
             const firebaseToken = authorization.split(" ")[1]
-            console.log(firebaseToken);
             if (!firebaseToken) {
                 res.status(401).send({ message: "Unauthorized Access" })
             }
@@ -52,7 +51,6 @@ async function run() {
             try {
                 const tokenUser = await admin.auth().verifyIdToken(firebaseToken)
                 req.tokenUser = tokenUser
-                console.log(tokenUser);
                 next()
             } catch (error) {
                 res.status(401).send({ message: "Invalid Token", error })
@@ -65,6 +63,13 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/food', async (req, res) => {
+            const id = req.query.id
+            const query = { _id: new ObjectId(id) }
+            const result = await foodsCollection.findOne(query)
+            res.send(result)
+        })
+
         app.get('/foods', async (req, res) => {
             const searchText = req?.query?.title || ''
             const query = {
@@ -74,11 +79,18 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/foods', async(req, res)=>{
+        app.post('/foods', async (req, res) => {
             const foodData = req.body
             const result = await foodsCollection.insertOne(foodData)
             res.send(result)
         })
+
+        app.post('/food/purchase', async (req, res) => {
+            const foodData = req.body
+            const result = await purchasedCollection.insertOne(foodData)
+            res.send(result)
+        })
+
 
         app.get('/top-foods', async (req, res) => {
             const options = {
