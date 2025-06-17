@@ -43,7 +43,7 @@ async function run() {
         const verifyFirebase = async (req, res, next) => {
             const authorization = req?.headers?.authorization
 
-            const firebaseToken = authorization.split(" ")[1]
+            const firebaseToken = authorization
             if (!firebaseToken) {
                 res.status(401).send({ message: "Unauthorized Access" })
             }
