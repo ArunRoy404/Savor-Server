@@ -79,8 +79,11 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/my-orders', async (req, res) => {
+        app.get('/my-orders', verifyFirebase, async (req, res) => {
             const email = req?.query?.email
+            if (email !== req.tokenUser.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
             const query = { buyerEmail: email }
             const result = await purchasedCollection.find(query).toArray()
             res.send(result)
@@ -92,8 +95,12 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/food/purchase', async (req, res) => {
+        app.post('/food/purchase', verifyFirebase, async (req, res) => {
             const foodData = req.body
+            const email = req.body.buyerEmail
+            if (email !== req.tokenUser.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
             const result = await purchasedCollection.insertOne(foodData)
             res.send(result)
         })
@@ -107,6 +114,12 @@ async function run() {
         })
 
         app.get('/foods/my-foods', verifyFirebase, async (req, res) => {
+
+            const email = req?.query?.ownerEmail
+            if (email !== req.tokenUser.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+
             const query = req?.query
             const result = await foodsCollection.find(query).toArray()
             res.send(result)
@@ -119,8 +132,12 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/my-orders', async (req, res) => {
+        app.delete('/my-orders', verifyFirebase, async (req, res) => {
             const id = req?.query?.id
+            const { email } = req.body
+            if (email !== req.tokenUser.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
             const query = { _id: new ObjectId(id) }
             const result = await purchasedCollection.deleteOne(query)
             res.send(result)
@@ -134,6 +151,19 @@ async function run() {
             const update = { $set: food }
             const options = { upsert: true }
 
+            const result = await foodsCollection.updateOne(query, update, options)
+            res.send(result)
+        })
+
+        app.put('/food/stock', async (req, res) => {
+            const id = req?.query?.id
+            const { stock } = req.body
+
+            const query = { _id: new ObjectId(id) }
+            const update = {
+                $set: { quantity: stock }
+            }
+            const options = { upsert: true }
             const result = await foodsCollection.updateOne(query, update, options)
             res.send(result)
         })
