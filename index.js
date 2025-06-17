@@ -60,10 +60,22 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/foods/my-foods', async (req, res)=>{
+        app.delete('/foods/my-foods', async (req, res) => {
             const id = req?.query?.id
-            const query = { _id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await foodsCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.put('/foods/my-foods', async (req, res) => {
+            const id = req?.query?.id
+            const { _id, ...food } = req.body
+
+            const query = { _id: new ObjectId(id) }
+            const update = { $set: food }
+            const options = { upsert: true }
+
+            const result = await foodsCollection.updateOne(query, update, options)
             res.send(result)
         })
 
