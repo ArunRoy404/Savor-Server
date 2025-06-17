@@ -74,6 +74,12 @@ async function run() {
             res.send(result)
         })
 
+        app.post('/foods', async(req, res)=>{
+            const foodData = req.body
+            const result = await foodsCollection.insertOne(foodData)
+            res.send(result)
+        })
+
         app.get('/top-foods', async (req, res) => {
             const options = {
                 sort: { "purchaseCount": -1 }
