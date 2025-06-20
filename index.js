@@ -4,11 +4,12 @@ const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { foodItems } = require('./data');
 
+
 const app = express()
 const port = process.env.PORT || 3000
-
-app.use(cors())
+app.use(cors());
 app.use(express.json())
+
 
 var admin = require("firebase-admin");
 var serviceAccount = require("./firebase-admin-key.json.json");
@@ -16,12 +17,11 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
+
+
 const DB_USER = process.env.DB_USER
 const DB_PASS = process.env.DB_PASS
-
-
 const uri = `mongodb+srv://${DB_USER}:${DB_PASS}@roy.tqtwhk6.mongodb.net/?retryWrites=true&w=majority&appName=ROY`;
-
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -31,23 +31,23 @@ const client = new MongoClient(uri, {
 });
 
 
+
 async function run() {
     try {
         // await client.connect()
-
         const database = client.db('Savor')
         const foodsCollection = database.collection('foods')
         const purchasedCollection = database.collection('purchased')
 
 
+
         const verifyFirebase = async (req, res, next) => {
             const authorization = req?.headers?.authorization
-
             const firebaseToken = authorization
+
             if (!firebaseToken) {
                 res.status(401).send({ message: "Unauthorized Access" })
             }
-
             try {
                 const tokenUser = await admin.auth().verifyIdToken(firebaseToken)
                 req.tokenUser = tokenUser
@@ -63,13 +63,13 @@ async function run() {
             res.send(result)
         })
 
+
         app.get('/food', async (req, res) => {
             const id = req.query.id
             const query = { _id: new ObjectId(id) }
             const result = await foodsCollection.findOne(query)
             res.send(result)
         })
-
         app.get('/foods', async (req, res) => {
             const searchText = req?.query?.title || ''
             const query = {
@@ -78,33 +78,6 @@ async function run() {
             const result = await foodsCollection.find(query).toArray()
             res.send(result)
         })
-
-        app.get('/my-orders', verifyFirebase, async (req, res) => {
-            const email = req?.query?.email
-            if (email !== req.tokenUser.email) {
-                res.status(403).send({ message: "Forbidden Access" })
-            }
-            const query = { buyerEmail: email }
-            const result = await purchasedCollection.find(query).toArray()
-            res.send(result)
-        })
-
-        app.post('/foods', async (req, res) => {
-            const foodData = req.body
-            const result = await foodsCollection.insertOne(foodData)
-            res.send(result)
-        })
-
-        app.post('/food/purchase', verifyFirebase, async (req, res) => {
-            const foodData = req.body
-            const email = req.body.buyerEmail
-            if (email !== req.tokenUser.email) {
-                res.status(403).send({ message: "Forbidden Access" })
-            }
-            const result = await purchasedCollection.insertOne(foodData)
-            res.send(result)
-        })
-
         app.get('/top-foods', async (req, res) => {
             const options = {
                 sort: { "purchaseCount": -1 }
@@ -112,30 +85,41 @@ async function run() {
             const result = await foodsCollection.find({}, options).limit(6).toArray()
             res.send(result)
         })
+        app.post('/foods', verifyFirebase, async (req, res) => {
+            const foodData = req.body
+            const email = foodData.ownerEmail
+            if (email !== req?.tokenUser?.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+                console.log("object");
+            }
+            const result = await foodsCollection.insertOne(foodData)
+            res.send(result)
+        })
 
-        app.get('/foods/my-foods', verifyFirebase, async (req, res) => {
 
-            const email = req?.query?.ownerEmail
-            if (email !== req.tokenUser.email) {
+
+        app.post('/food/purchase', verifyFirebase, async (req, res) => {
+            const foodData = req.body
+            const email = req.body.buyerEmail
+            if (email !== req?.tokenUser?.email) {
                 res.status(403).send({ message: "Forbidden Access" })
             }
-
-            const query = req?.query
-            const result = await foodsCollection.find(query).toArray()
+            const result = await purchasedCollection.insertOne(foodData)
             res.send(result)
         })
-
-        app.delete('/foods/my-foods', async (req, res) => {
-            const id = req?.query?.id
-            const query = { _id: new ObjectId(id) }
-            const result = await foodsCollection.deleteOne(query)
+        app.get('/my-orders', verifyFirebase, async (req, res) => {
+            const email = req?.query?.email
+            if (email !== req?.tokenUser?.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+            const query = { buyerEmail: email }
+            const result = await purchasedCollection.find(query).toArray()
             res.send(result)
         })
-
         app.delete('/my-orders', verifyFirebase, async (req, res) => {
             const id = req?.query?.id
             const { email } = req.body
-            if (email !== req.tokenUser.email) {
+            if (email !== req?.tokenUser?.email) {
                 res.status(403).send({ message: "Forbidden Access" })
             }
             const query = { _id: new ObjectId(id) }
@@ -143,30 +127,57 @@ async function run() {
             res.send(result)
         })
 
-        app.put('/foods/my-foods', async (req, res) => {
+
+
+        app.get('/foods/my-foods', verifyFirebase, async (req, res) => {
+            const email = req?.query?.ownerEmail
+            if (email !== req?.tokenUser?.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+            const query = req?.query
+            const result = await foodsCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.delete('/foods/my-foods', verifyFirebase, async (req, res) => {
+            const id = req?.query?.id
+            const { email } = req.body
+            if (email !== req?.tokenUser?.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+            const query = { _id: new ObjectId(id) }
+            const result = await foodsCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.put('/foods/my-foods', verifyFirebase, async (req, res) => {
             const id = req?.query?.id
             const { _id, ...food } = req.body
+
+            const email = food.ownerEmail
+            if (email !== req?.tokenUser?.email) {
+                res.status(403).send({ message: "Forbidden Access" })
+                console.log("object");
+            }
 
             const query = { _id: new ObjectId(id) }
             const update = { $set: food }
             const options = { upsert: true }
-
             const result = await foodsCollection.updateOne(query, update, options)
             res.send(result)
         })
-
         app.put('/food/stock', async (req, res) => {
             const id = req?.query?.id
-            const { stock } = req.body
+            const { stock, purchaseCount } = req.body
 
             const query = { _id: new ObjectId(id) }
             const update = {
-                $set: { quantity: stock }
+                $set: { quantity: stock, purchaseCount }
             }
             const options = { upsert: true }
             const result = await foodsCollection.updateOne(query, update, options)
             res.send(result)
         })
+
+
 
         // await client.db('admin').command({ ping: 1 })
         // console.log("Pinged your deployment. You successfully connected to MongoDB!");
