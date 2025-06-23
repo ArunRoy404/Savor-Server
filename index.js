@@ -10,17 +10,22 @@ const port = process.env.PORT || 3000
 app.use(cors());
 app.use(express.json())
 
+const DB_USER = process.env.DB_USER
+const DB_PASS = process.env.DB_PASS
+const FB_SERVICE_KEY = process.env.FB_SERVICE_KEY
+
+
+const decoded = Buffer.from(FB_SERVICE_KEY, 'base64').toString('utf8')
+const serviceAccount = JSON.parse(decoded)
+
 
 var admin = require("firebase-admin");
-var serviceAccount = require("./firebase-admin-key.json.json");
+// var serviceAccount = require("./firebase-admin-service-key.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
 
-
-const DB_USER = process.env.DB_USER
-const DB_PASS = process.env.DB_PASS
 const uri = `mongodb+srv://${DB_USER}:${DB_PASS}@roy.tqtwhk6.mongodb.net/?retryWrites=true&w=majority&appName=ROY`;
 const client = new MongoClient(uri, {
     serverApi: {
@@ -29,7 +34,6 @@ const client = new MongoClient(uri, {
         deprecationErrors: true
     }
 });
-
 
 
 async function run() {
