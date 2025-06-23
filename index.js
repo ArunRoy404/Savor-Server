@@ -67,11 +67,11 @@ async function run() {
             res.send(result)
         })
 
-
         app.get('/food', async (req, res) => {
             const id = req.query.id
             const query = { _id: new ObjectId(id) }
             const result = await foodsCollection.findOne(query)
+            if (!result) res.status(404).send({ message: "data not found" })
             res.send(result)
         })
         app.get('/foods', async (req, res) => {
