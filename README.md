@@ -12,12 +12,16 @@ This server handles food management, user authentication, order handling, top fo
 
 ---
 
+<br/>
+
 ## 🔗 Live Server
 
 - **API Base URL:** [https://savor-server.vercel.app](https://savor-server.vercel.app)
 - 🔗 **Client (Frontend)**: [https://savor-client.vercel.app](https://savor-client.vercel.app) 
 
 ---
+
+<br/>
 
 ## 🎯 Purpose
 
@@ -29,6 +33,8 @@ To serve secure, scalable, and RESTful endpoints for the Savor web application. 
 - Authenticating users securely using Firebase JWT
 
 ---
+
+<br/>
 
 ## ✨ Key Features
 
@@ -43,17 +49,35 @@ To serve secure, scalable, and RESTful endpoints for the Savor web application. 
 
 ---
 
+<br/>
+
 ## 🧰 Technologies Used
 
-| Tool/Technology | Description |
-|------------------|-------------|
-| `express`        | Node.js framework for building APIs |
-| `mongodb`        | NoSQL database for storing food and order data |
-| `firebase-admin` | For verifying Firebase ID tokens |
-| `cors`           | Enables cross-origin requests |
-| `dotenv`         | Loads environment variables from `.env` file |
+| Technology       | Description                                   |
+|------------------|-----------------------------------------------|
+| Node.js          | JavaScript runtime environment for server-side development |
+| Express.js       | Web application framework for Node.js         |
+| MongoDB          | NoSQL document database                        |
+| Firebase         | Authentication services via Firebase Admin SDK|
+| REST API         | Architectural style for API endpoints          |
 
 ---
+
+<br/>
+
+## 📦 Dependencies
+
+| Package         | Purpose                                       |
+|-----------------|-----------------------------------------------|
+| express         | Web framework for Node.js                      |
+| mongodb         | Official MongoDB Node.js driver                |
+| firebase-admin  | Firebase Admin SDK for server-side auth       |
+| cors            | Middleware to enable Cross-Origin Resource Sharing |
+| dotenv          | Loads environment variables from `.env` files |
+
+---
+
+<br/>
 
 ## 🛡️ Security & Authentication
 
@@ -65,6 +89,8 @@ All sensitive routes are protected using Firebase JWT tokens:
 - If user tries to modify unauthorized data: returns `403 Forbidden`.
 
 ---
+
+<br/>
 
 ## 📁 API Endpoints
 
@@ -91,12 +117,48 @@ All sensitive routes are protected using Firebase JWT tokens:
 
 ---
 
-## 🔐 Environment Variables
+<br/>
 
-Create a `.env` file in the root with the following:
+# 🚀 Savor-Server - Local Development Setup Guide
+Follow these steps to run the Savor project on your local machine.
 
-```env
-PORT=3000
-DB_USER=your_db_username
-DB_PASS=your_db_password
-FB_SERVICE_KEY=your_firebase_admin_key_base64_encoded
+## Prerequisites
+- Node.js (v16 or higher recommended)
+- npm 
+- Git
+
+
+## Step-by-Step Installation
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ArunRoy404/Savor-Server.git
+   cd Savor-Server
+   ```
+
+2. **Set up environment variables**
+    Create a .env file in the root directory and add the following variables with your own credentials:
+
+    ```bash
+        DB_USER=your_db_username
+        DB_PASS=your_db_password
+        FB_SERVICE_KEY=your_firebase_admin_key_base64_encoded
+    ```
+
+    You'll need to:
+    - Create a Firebase project at https://firebase.google.com/
+
+
+3. **Install dependencies**
+   ```bash
+        npm install
+   ```
+    
+4. **Run The Development Server**
+   ```bash
+        node index.js
+        # or
+        nodemon index.js
+   ```
+
+5. **Access the application**
+    Open your browser and visit: http://localhost:3000
